@@ -1,3 +1,4 @@
+
 """
 This file is part of nand2tetris, as taught in The Hebrew University, and
 was written by Aviv Yaish. It is an extension to the specifications given
@@ -6,6 +7,7 @@ as allowed by the Creative Common Attribution-NonCommercial-ShareAlike 3.0
 Unported [License](https://creativecommons.org/licenses/by-nc-sa/3.0/).
 """
 import typing
+import re
 
 
 class Parser:
@@ -21,12 +23,12 @@ class Parser:
         Args:
             input_file (typing.TextIO): input file.
         """
-        # Your code goes here!
-        # A good place to start is to read all the lines of the input:
-        # input_lines = input_file.read().splitlines()
-        self.input_lines = input_file.read().replace(" ", "").splitlines()
-        self.curr_line = -1
-        self.advance()
+        self._lines = input_file.read()
+        self._lines = re.sub(r'[/].*||[\t\ ]', '', self._lines)     # remove comments and white spaces
+        self._lines = re.sub(r'[\s]{2}', '', self._lines)           # remove double newlines
+        self._lines = re.sub(r'^\s|\s$', '', self._lines)           # remove first and last lines if they are white spaces
+        self._lines = self._lines.splitlines()
+        self._curr_line = 0
 
 
     def has_more_commands(self) -> bool:
@@ -35,16 +37,15 @@ class Parser:
         Returns:
             bool: True if there are more commands, False otherwise.
         """
-        # Your code goes here!
-        return self.curr_line<len(self.input_lines)
+        return self._curr_line < len(self._lines)
+
 
     def advance(self) -> None:
         """Reads the next command from the input and makes it the current command.
         Should be called only if has_more_commands() is true.
         """
-        self.curr_line = self.curr_line + 1
-        while(self.has_more_commands() and ("//" in self.input_lines[self.curr_line] or self.input_lines[self.curr_line]=='')):
-            self.curr_line = self.curr_line + 1
+        self._curr_line = self._curr_line + 1
+
 
     def command_type(self) -> str:
         """
@@ -54,12 +55,11 @@ class Parser:
             "C_COMMAND" for dest=comp;jump
             "L_COMMAND" (actually, pseudo-command) for (Xxx) where Xxx is a symbol
         """
-        if (not self.has_more_commands()):
-            return
-        if (self.input_lines[self.curr_line][0] == '@'):
-            return "A_COMMAND" 
-        if (self.input_lines[self.curr_line][0] == '('):
+        i = self._curr_line
+        if ('(' in self._lines[i]):
             return "L_COMMAND"
+        if ('@' in self._lines[i]):
+            return "A_COMMAND"
         return "C_COMMAND"
 
 
@@ -71,7 +71,9 @@ class Parser:
             "L_COMMAND".
         """
         if (self.command_type() == "A_COMMAND"):
-            return self.input_lines[self.curr_line][1:]
+            return self._lines[self._curr_line][1:]
+        if (self.command_type() == "L_COMMAND"):
+            return self._lines[self._curr_line][1:-1]
 
 
     def dest(self) -> str:
@@ -80,12 +82,12 @@ class Parser:
             str: the dest mnemonic in the current C-command. Should be called 
             only when commandType() is "C_COMMAND".
         """
-        if (self.command_type() == "C_COMMAND"):
-            str1 = self.input_lines[self.curr_line]
-            i = str1.find('=')
-            if (i == -1):
-                return ""
-            return str1[:i]
+        mnemonic = self._lines[self._curr_line]
+        i = mnemonic.find('=')
+        if (self.command_type() == "C_COMMAND" and i != -1):
+            return mnemonic[:i]
+        return ''
+
 
     def comp(self) -> str:
         """
@@ -93,17 +95,17 @@ class Parser:
             str: the comp mnemonic in the current C-command. Should be called 
             only when commandType() is "C_COMMAND".
         """
+        mnemonic = self._lines[self._curr_line]
+        i = mnemonic.find('=')
+        j = mnemonic.find(';')
         if (self.command_type() == "C_COMMAND"):
-            str1 = self.input_lines[self.curr_line]
-            i = str1.find('=')
-            j = str1.find(';')
             if (i == -1 and j == -1):
-                return str1
-            if (i == -1 and j != -1):
-                return str1[:j]
-            if (i != -1 and j == -1):
-                return str1[i+1:]
-            return str1[i+1:j] 
+                return mnemonic
+            if (j == -1):
+                return mnemonic[i+1:]
+            return mnemonic[i+1:j]
+        return ''
+
 
     def jump(self) -> str:
         """
@@ -111,10 +113,8 @@ class Parser:
             str: the jump mnemonic in the current C-command. Should be called 
             only when commandType() is "C_COMMAND".
         """
-        if (self.command_type() == "C_COMMAND"):
-            str1 = self.input_lines[self.curr_line]
-            j = str1.find(';')
-            if (j == -1):
-                return ""
-            return str1[j+1:]
- 
+        mnemonic = self._lines[self._curr_line]
+        j = mnemonic.find(';')
+        if (self.command_type() == "C_COMMAND" and j != -1):
+            return mnemonic[j+1:]
+        return ''

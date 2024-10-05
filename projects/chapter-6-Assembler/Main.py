@@ -27,28 +27,49 @@ def assemble_file(
     # Note that you can write to output_file like so:
     # output_file.write("Hello world! \n")
     parser = Parser(input_file)
-    symbolTable = SymbolTable()
-    while (parser.has_more_commands()):
-        parser.advance()
-        if (parser.command_type() == "L_COMMAND"):
-            symbolTable.add_entry("the label goes here", 42069);
+    table = SymbolTable()
+    first_pass(parser, table)
+    parser._curr_line = 0
+    parser._curr_line = parser._curr_line + 1
+    second_pass(parser, table)
+    # while (parser.has_more_commands()):
+    #     praser.advance()
 
-    parser.curr_line = -1
-    parser.advance()
+def initialization(table: SymbolTable) -> None:
+    pass
+
+def first_pass(parser: Parser, table: SymbolTable)->None:
+    parser._curr_line = 0
+    romAddress = 0;
+    while (parser.has_more_commands()):
+        if (parser.command_type() == "A_COMMAND" or parser.command_type() == "C_COMMAND"):
+            romAddress = romAddress + 1;
+        elif (parser.command_type() == "L_COMMAND"):
+            table.add_entry(parser.symbol(), romAddress)
+        parser.advance()
+
+
+def second_pass(parser: Parser, table: SymbolTable)->None:
+    parser._curr_line = 0
+    symbolic_address = 16
     while (parser.has_more_commands()):
         if (parser.command_type() == "A_COMMAND"):
-            if (parser.symbol()[0] in "0123456789"):
-                # TURN TO BINARY AND ASSIGN
+            symbol = parser.symbol()
+            if (symbol.isdigit()):
                 pass
             else:
-                if (symbolTable.contains(parser.symbol())):
-                    # TURN ADDRESS TO BINARY AND ASSIGN
-                    pass
-                else:
-                    # PROVIDE NEW ADDRESS TO LABLEL, TURN TO BINARY AND ASSIGN
-                    pass
+                if not table.contains(symbol):
+                    table.add_entry(symbol, symbolic_address)
+                    symbolic_address += 1
+                symbol = table.get_address(symbol)
+            value = int(symbol)
+            print("{0:016b}".format(value))
         if (parser.command_type() == "C_COMMAND"):
-            print("111" + Code.comp(parser.comp()) + Code.dest(parser.dest()) + Code.jump(parser.jump()))
+            comp_bits = Code.comp(parser.comp())
+            dest_bits = Code.dest(parser.dest())
+            jump_bits = Code.jump(parser.jump())
+            print("111" + comp_bits + dest_bits + jump_bits)
+
         parser.advance()
 
 
