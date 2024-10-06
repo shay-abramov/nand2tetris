@@ -19,23 +19,21 @@ class Code:
         Returns:
             str: 3-bit long binary code of the given mnemonic.
         """
-        val = ""
-        if ("A" in mnemonic):
-            val = val + "1"
+        str = ""
+        if 'A' in mnemonic:
+            str += '1'
         else:
-            val = val + "0"
-
-        if ("D" in mnemonic):
-            val = val + "1"
+            str += '0'
+        if 'D' in mnemonic:
+            str += '1'
         else:
-            val = val + "0"
-
-        if ("M" in mnemonic):
-            val = val + "1"
+            str += '0'
+        if 'M' in mnemonic:
+            str += '1'
         else:
-            val = val + "0"
+            str += '0'
+        return str
 
-        return val
 
     @staticmethod
     def comp(mnemonic: str) -> str:
@@ -46,34 +44,51 @@ class Code:
         Returns:
             str: the binary code of the given mnemonic.
         """
-        val = ""
-        if ("M" in mnemonic):
-            val = val + "1"
+        a = "0"
+        if "M" in mnemonic:
+            a = "1"
             mnemonic = mnemonic.replace("M", "A")
-        else:
-            val = val + "0"
-        if (mnemonic == "0"):
-            val += "101010"
-        elif (mnemonic == "1"):
-            val += "111111"
-        elif (mnemonic == "-1"):
-            val += "111010"
-        elif (mnemonic == "D"):
-            val += "001100"
-        elif (mnemonic == "A"):
-            val += "110000"
-        elif (mnemonic == "!D"):
-            val += "001101"
-        elif (mnemonic == "!A"):
-            val += "110001"
-        elif (mnemonic == "-D"):
-            val += "001111"
-        elif (mnemonic == "-A"):
-            val += "110011"
-        else:
-            val += "?*?*?*"
 
-        return val
+        match mnemonic:
+            case "0":
+                return a + "101010"
+            case "1":
+                return a + "111111"
+            case "-1":
+                return a + "111010"
+            case "D":
+                return a + "001100"
+            case "A":
+                return a + "110000"
+            case "!D":
+                return a + "001101"
+            case "!A":
+                return a + "110001"
+            case "-D":
+                return a + "001111"
+            case "-A":
+                return a + "110011"
+            case "D+1":
+                return a + "011111"
+            case "A+1":
+                return a + "110111"
+            case "D-1":
+                return a + "001110"
+            case "A-1":
+                return a + "110010"
+            case "D+A":
+                return a + "000010"
+            case "D-A":
+                return a + "010011"
+            case "A-D":
+                return a + "000111"
+            case "D&A":
+                return a + "000000"
+            case "D|A":
+                return a + "010101"
+            case _:
+                # default, if code was correct shouldn't get here
+                return ""
 
     @staticmethod
     def jump(mnemonic: str) -> str:
@@ -84,18 +99,28 @@ class Code:
         Returns:
             str: 3-bit long binary code of the given mnemonic.
         """
-        if (mnemonic == ""):
+        str = ""
+        if mnemonic == "":
             return "000"
-        if (mnemonic == "JGT"):
-            return "001"
-        if (mnemonic == "JEQ"):
-            return "010"
-        if (mnemonic == "JGE"):
-            return "011"
-        if (mnemonic == "JLT"):
-            return "100"
-        if (mnemonic == "JNE"):
+        if mnemonic == "JMP":
+            return "111"
+        if mnemonic == "JNE":
             return "101"
-        if (mnemonic == "JLE"):
-            return "110"
-        return "111"
+
+        if 'L' in mnemonic:
+            str += '1'
+        else:
+            str += '0'
+
+        if 'E' in mnemonic:
+            str += '1'
+        else:
+            str += '0'
+
+        if 'G' in mnemonic:
+            str += '1'
+        else:
+            str += '0'
+
+        return str
+
