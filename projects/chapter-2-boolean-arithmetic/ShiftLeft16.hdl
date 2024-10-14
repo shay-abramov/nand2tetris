@@ -1,0 +1,9 @@
+ // comment for good practice
+
+CHIP ShiftLeft16 {
+	IN in[16];
+	OUT out[16];
+
+	PARTS:
+	And16	(a[0]=false, a[1..15]=in[0..14], b=true,	out=out);
+}
