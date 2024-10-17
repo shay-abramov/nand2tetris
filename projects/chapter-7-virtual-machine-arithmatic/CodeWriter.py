@@ -18,7 +18,8 @@ class CodeWriter:
             output_stream (typing.TextIO): output stream.
         """
         self._output_stream = output_stream
-        segment_initialization = "@256\n"
+        segment_initialization = "// initialization\n"
+        segment_initialization += "@256\n"
         segment_initialization += "D=A\n"
         segment_initialization += "@SP\n"
         segment_initialization += "M=D\n"
@@ -27,7 +28,6 @@ class CodeWriter:
         segment_initialization += "@THIS\n"
         segment_initialization += "@THAT\n"
         segment_initialization += "@TEMP\n"
-        print(segment_initialization)
         self._output_stream.write(segment_initialization)
 
 
@@ -100,9 +100,44 @@ class CodeWriter:
             write += "A=M-1\n"
             write += "M=!D\n"
         elif command == "gt":
-            pass
+            write = "// gt\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
+            write += "D=M\n"
+            write += "@SP\n"
+            write += "M=M-1\n"
+            write += "A=M-1\n"
+            write += "D=D-M\n"
+            write += "@IS_GREATER\n"
+            write += "D;JLT\n"
+            write += "D=-1\n"
+            write += "@ASSIGN_BOOLEAN\n"
+            write += "D;JMP\n"
+            write += "(IS_GREATER)\n"
+            write += "D=0\n"
+            write += "(ASSIGN_BOOLEAN)\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
+            write += "M=!D\n"
         elif command == "lt":
-            pass
+            write = "// lt\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
+            write += "D=M\n"
+            write += "@SP\n"
+            write += "M=M-1\n"
+            write += "A=M-1\n"
+            write += "D=D-M\n"
+            write += "@IS_LESS\n"
+            write += "D;JGT\n"
+            write += "D=-1\n"
+            write += "@ASSIGN_BOOLEAN\n"
+            write += "D;JMP\n"
+            write += "(IS_LESS)\n"
+            write += "D=0\n"
+            write += "(ASSIGN_BOOLEAN)\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
         elif command == "and":
             write = "// and\n"
             write += "@SP\n"
@@ -113,10 +148,19 @@ class CodeWriter:
             write += "A=M-1\n"
             write += "M=D&M\n"
         elif command == "or":
-            pass
+            write = "// or\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
+            write += "D=M\n"
+            write += "@SP\n"
+            write += "M=M-1\n"
+            write += "A=M-1\n"
+            write += "M=D|M\n"
         elif command == "not":
-            pass
-        print(write)
+            write = "// not\n"
+            write += "@SP\n"
+            write += "A=M-1\n"
+            write += "M=-M\n"
         self._output_stream.write(write)
 
 
@@ -134,7 +178,7 @@ class CodeWriter:
         # be translated to the assembly symbol "Xxx.i". In the subsequent
         # assembly process, the Hack assembler will allocate these symbolic
         # variables to the RAM, starting at address 16.
-        _segment
+        _segment = ''
         if segment == "local":
             _segment = "LCL"
         elif segment == "argument":
@@ -145,17 +189,18 @@ class CodeWriter:
             _segment = "THAT"
 
         if command == "C_PUSH":
+            write = f"// push {segment} {index}\n"
             if segment == "constant":
-                write = f"@{index}\n"
+                write += f"@{index}\n"
                 write += "D=A\n"
             elif segment == "pointer":
                 if index == "0":
-                    write = "@THIS\n"
+                    write += "@THIS\n"
                 elif index == "1":
-                    write = "@THAT\n"
+                    write += "@THAT\n"
                 write += "D=M\n"
             else:
-                write = f"@{index}\n"
+                write += f"@{index}\n"
                 write += "D=A\n"
                 write += f"@{_segment}\n"
                 write += "A=A+D\n"
@@ -166,7 +211,8 @@ class CodeWriter:
             write += "@SP\n"
             write += "M=M+1\n"
         elif command == "C_POP":
-            write = "@SP\n"
+            write = f"// push {segment} {index}\n"
+            write += "@SP\n"
             write += "M=M-1\n"
             write += "D=M\n"
             if segment == "pointer":
@@ -181,7 +227,6 @@ class CodeWriter:
                 write += f"@{_segment}\n"
                 write += f"A=A+D\n"
                 write += "M=D\n"
-        print(write)
         self._output_stream.write(write)
 
 

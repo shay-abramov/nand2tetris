@@ -63,16 +63,17 @@ class Parser:
         Args:
             input_file (typing.TextIO): input file.
         """
+        # next sequence of lines used to remove comments and extra white lines
         input_str = input_file.read()
         input_str = re.sub(r'[/]{2}.*', '', input_str)
         input_str = re.sub(r'\s{2,}', '', input_str)
         input_str = re.sub(r'\s$', '', input_str)
-        print(input_str)
+        
+        # split effective lines into an array and set line index to -1 
+        # (ready to advance to the first line)
         self._lines = input_str.splitlines()
         self._i = -1
-        self._current_command = None
-        self._arg1 = None
-        self._arg2 = None
+        self._curr_line = None
 
 
     def has_more_commands(self) -> bool:
@@ -91,20 +92,7 @@ class Parser:
         """
         if self.has_more_commands():
             self._i = self._i + 1
-            curr_line = self._lines[self._i]
-
-            if "add" in curr_line:
-                self._current_command = C_ARITHMETIC
-            elif "push" in curr_line:
-                self._current_command = C_PUSH
-                self._arg2 = curr_line.split()[2]
-            elif "pop" in curr_line:
-                self._current_command = C_POP
-            elif "label" in curr_line:
-                self._current_command = C_LABEL
-            elif "goto" in curr_line:
-                self._current_command = C_GOTO
-
+            self._curr_line = self._lines[self._i]
 
 
     def command_type(self) -> str:
@@ -116,7 +104,18 @@ class Parser:
             "C_PUSH", "C_POP", "C_LABEL", "C_GOTO", "C_IF", "C_FUNCTION",
             "C_RETURN", "C_CALL".
         """
-        return self._current_command
+        arithmetic_commands = ["add", "sub", "neg", "eq", "gt", "lt", "and", "or", "not"]
+
+        if any(command in self._curr_line for command in arithmetic_commands):
+            return C_ARITHMETIC
+        elif "push" in self._curr_line:
+            return C_PUSH
+        elif "pop" in self._curr_line:
+            return C_POP
+        elif "label" in self._curr_line:
+            return C_LABEL
+        elif "goto" in self._curr_line:
+            return C_GOTO
 
 
     def arg1(self) -> str:
@@ -126,12 +125,10 @@ class Parser:
             "C_ARITHMETIC", the command itself (add, sub, etc.) is returned. 
             Should not be called if the current command is "C_RETURN".
         """
-        curr_line = self._lines[self._i]
-        if self._current_command == C_ARITHMETIC:
-            return curr_line.split()[0]
-        elif self._current_command == C_PUSH or self._current_command == C_POP:
-            return curr_line.split()[1]
-        return self._arg1
+        if self.command_type() == C_ARITHMETIC:
+            return self._curr_line.split()[0]
+        elif self.command_type() == C_PUSH or self.command_type() == C_POP:
+            return self._curr_line.split()[1]
 
 
     def arg2(self) -> int:
@@ -141,5 +138,6 @@ class Parser:
             called only if the current command is "C_PUSH", "C_POP", 
             "C_FUNCTION" or "C_CALL".
         """
-        return self._arg2
+        if self.command_type() == C_PUSH or self.command_type() == C_POP:
+            return self._curr_line.split()[2]
 
