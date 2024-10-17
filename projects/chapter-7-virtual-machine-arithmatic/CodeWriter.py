@@ -187,22 +187,17 @@ class CodeWriter:
             _segment = "LCL"
         elif segment == "argument":
             _segment = "ARG"
-        elif segment == "this":
+        elif segment == "this" or (segment == "pointer" and index == 0):
             _segment = "THIS"
-        elif segment == "that":
+        elif segment == "that" or (segment == "pointer" and index == 1):
             _segment = "THAT"
+        elif segment == ""
 
         if command == "C_PUSH":
             write = f"// push {segment} {index}\n"
             if segment == "constant":
                 write += f"@{index}\n"
                 write += "D=A\n"
-            elif segment == "pointer":
-                if index == "0":
-                    write += "@THIS\n"
-                elif index == "1":
-                    write += "@THAT\n"
-                write += "D=M\n"
             else:
                 write += f"@{index}\n"
                 write += "D=A\n"
