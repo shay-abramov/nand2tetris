@@ -78,7 +78,7 @@ class CodeWriter:
             write += "@SP\n"
             write += "M=M-1\n"
             write += "A=M-1\n"
-            write += "M=D-M\n"
+            write += "M=M-D\n"
         elif command == "neg":
             write = "// neg\n"
             write += "@SP\n"
@@ -100,7 +100,7 @@ class CodeWriter:
             write += "@SP\n"
             write += "A=M-1\n"
             write += "M=!D\n"
-            self._label_counter++
+            self._label_counter = self._label_counter + 1
         elif command == "gt":
             write = "// gt\n"
             write += "@SP\n"
@@ -121,7 +121,7 @@ class CodeWriter:
             write += "@SP\n"
             write += "A=M-1\n"
             write += "M=!D\n"
-            self._label_counter++
+            self._label_counter = self._label_counter + 1
         elif command == "lt":
             write = "// lt\n"
             write += "@SP\n"
@@ -133,15 +133,16 @@ class CodeWriter:
             write += "D=D-M\n"
             write += f"@IS_LESS{self._label_counter}\n"
             write += "D;JGT\n"
-            write += "D=-1\n"
+            write += "D=0\n"
             write += f"@ASSIGN_BOOLEAN{self._label_counter}\n"
             write += "D;JMP\n"
             write += f"(IS_LESS{self._label_counter})\n"
-            write += "D=0\n"
+            write += "D=-1\n"
             write += f"(ASSIGN_BOOLEAN{self._label_counter})\n"
             write += "@SP\n"
             write += "A=M-1\n"
-            self._label_counter++
+            write += "M=D\n"
+            self._label_counter = self._label_counter + 1
         elif command == "and":
             write = "// and\n"
             write += "@SP\n"
@@ -164,7 +165,7 @@ class CodeWriter:
             write = "// not\n"
             write += "@SP\n"
             write += "A=M-1\n"
-            write += "M=-M\n"
+            write += "M=!M\n"
         self._output_stream.write(write)
 
 
@@ -191,7 +192,8 @@ class CodeWriter:
             _segment = "THIS"
         elif segment == "that" or (segment == "pointer" and index == 1):
             _segment = "THAT"
-        elif segment == ""
+        elif segment == "temp":
+            _segment = "TEMP"
 
         if command == "C_PUSH":
             write = f"// push {segment} {index}\n"
@@ -210,22 +212,24 @@ class CodeWriter:
             write += "@SP\n"
             write += "M=M+1\n"
         elif command == "C_POP":
-            write = f"// push {segment} {index}\n"
+            write = f"// pop {segment} {index}\n"
             write += "@SP\n"
             write += "M=M-1\n"
             write += "D=M\n"
-            if segment == "pointer":
-                if index == "0":
-                    write += "@THIS\n"
-                if index == "1":
-                    write += "@THAT\n"
+            if _segment == "THIS":
+                write += "@THIS\n"
+                write += "A=M\n"
                 write += "M=D\n"
-            elif segment != "constant":
+            elif _segment == "THAT":
+                write += "@THAT\n"
+                write += "A=M\n"
+                write += "M=D\n"
+            else:
                 write += f"@{index}\n"
                 write += "D=A\n"
                 write += f"@{_segment}\n"
-                write += f"A=A+D\n"
-                write += "M=D\n"
+                write += "A=M+D\n"
+                write += "M=-1\n"
         self._output_stream.write(write)
 
 
