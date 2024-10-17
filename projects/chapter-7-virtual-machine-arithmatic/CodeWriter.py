@@ -329,3 +329,11 @@ class CodeWriter:
         # LCL = *(frame-4)              // restores LCL for the caller
         # goto return_address           // go to the return address
         pass
+
+    def finish(self) -> None:
+        write = "// finisg assembly code with infinite loop\n"
+        write += "(END)\n"
+        write += "@END\n"
+        write += "D;JMP\n"
+        self._output_stream.write(write)
+

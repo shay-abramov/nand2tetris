@@ -28,6 +28,7 @@ def translate_file(
             codeWriter.write_arithmetic(parser.arg1())
         if parser.command_type() == "C_PUSH":
             codeWriter.write_push_pop(parser.command_type(), parser.arg1(), parser.arg2())
+    codeWriter.finish()
 
 
 if "__main__" == __name__:
