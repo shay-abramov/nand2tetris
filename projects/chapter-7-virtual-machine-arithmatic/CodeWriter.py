@@ -183,28 +183,55 @@ class CodeWriter:
         # be translated to the assembly symbol "Xxx.i". In the subsequent
         # assembly process, the Hack assembler will allocate these symbolic
         # variables to the RAM, starting at address 16.
-        _segment = ''
+        _segment = "constant"
         if segment == "local":
             _segment = "LCL"
         elif segment == "argument":
             _segment = "ARG"
-        elif segment == "this" or (segment == "pointer" and index == 0):
+        elif segment == "this":
             _segment = "THIS"
-        elif segment == "that" or (segment == "pointer" and index == 1):
+        elif segment == "pointer":
+            if index == "0":
+                _segment = "PTR_THIS"
+            elif index == "1":
+                _segment = "PTR_THAT"
+            else:
+                print("error occured attempting to decode pointer")
+        elif segment == "that":
             _segment = "THAT"
         elif segment == "temp":
             _segment = "TEMP"
+        elif segment == "static":
+            _segment = "STATIC"
 
         if command == "C_PUSH":
             write = f"// push {segment} {index}\n"
-            if segment == "constant":
+            if _segment == "constant":
                 write += f"@{index}\n"
                 write += "D=A\n"
+            elif _segment == "TEMP":
+                write += "@5\n"
+                write += "D=A\n"
+                write += f"@{index}\n"
+                write += "A=D+A\n"
+                write += "D=M\n"
+            elif _segment == "PTR_THIS":
+                write += "@THIS\n"
+                write += "D=M\n"
+            elif _segment == "PTR_THAT":
+                write += "@THAT\n"
+                write += "D=M\n"
+            elif _segment == "STATIC":
+                write += f"@{index}\n"
+                write += "D=A\n"
+                write += "@16\n"
+                write += "A=D+A\n"
+                write += "D=M\n"
             else:
                 write += f"@{index}\n"
                 write += "D=A\n"
                 write += f"@{_segment}\n"
-                write += "A=A+D\n"
+                write += "A=M+D\n"
                 write += "D=M\n"
             write += "@SP\n"
             write += "A=M\n"
@@ -213,23 +240,35 @@ class CodeWriter:
             write += "M=M+1\n"
         elif command == "C_POP":
             write = f"// pop {segment} {index}\n"
-            write += "@SP\n"
-            write += "M=M-1\n"
-            write += "D=M\n"
-            if _segment == "THIS":
+            write += f"@{index}\n"
+            write += "D=A\n"
+            write += f"@{_segment}\n"
+            if _segment == "TEMP":
+                write += f"@5\n"
+                write += "D=A+D\n"
+            elif _segment == "PTR_THIS":
                 write += "@THIS\n"
-                write += "A=M\n"
-                write += "M=D\n"
-            elif _segment == "THAT":
+                write += "D=A\n"
+            elif _segment == "PTR_THAT":
                 write += "@THAT\n"
-                write += "A=M\n"
-                write += "M=D\n"
-            else:
+                write += "D=A\n"
+            elif _segment == "STATIC":
                 write += f"@{index}\n"
                 write += "D=A\n"
-                write += f"@{_segment}\n"
-                write += "A=M+D\n"
-                write += "M=-1\n"
+                write += "@16\n"
+                write += "D=D+A\n"
+            else:
+                write += "D=M+D\n"
+            write += "@R13\n"
+            write += "M=D\n"
+            write += "@SP\n"
+            write += "M=M-1\n"
+            write += "A=M\n"
+            write += "D=M\n"
+            write += "@R13\n"
+            write += "A=M\n"
+            write += "M=D\n"
+
         self._output_stream.write(write)
 
 
