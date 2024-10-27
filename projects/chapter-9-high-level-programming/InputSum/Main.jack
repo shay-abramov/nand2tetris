@@ -1,0 +1,16 @@
+class Main {
+    function void main() {
+        var int i;
+        var int sum;
+        let sum = 0;
+        let i = Keyboard.readInt("enter a number: ");
+        while (i > 0) {
+            let sum = sum + i;
+            let i = Keyboard.readInt("enter another number: ");
+        }
+        do Output.printString("the sum of all numbers is: ");
+        do Output.printInt(sum);
+        do Output.println();
+        return;
+    }
+}
