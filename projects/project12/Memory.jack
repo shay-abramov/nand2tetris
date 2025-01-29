@@ -12,6 +12,11 @@
  */ 
 class Memory {
 
+    static int heapBase; // I wanted to declare a const/symbolic naming for this address
+    static int heapSize;
+
+    static Array freeList;
+
     static Array ram;
     static Array heap;
     static Array freeList;
@@ -24,11 +29,12 @@ class Memory {
         // 3. freeList.next = null
 
         let ram = 0;
-        let heap = 2048;
-        let freeList = 2048;
+        let heapBase = 2048;
+        let heapSize = 14335;
 
-        let heap[0] = 0;
-        let heap[1] = 14335;
+        let freeList = heapBase;
+        let freeList[0] = heapSize;
+        let freeList[1] = null;
 
         return;
     }
@@ -60,37 +66,35 @@ class Memory {
         // The figure MemoryTest/MemoryFreeListExample.png illustrates how
         // the freeList should look like.
 
-        var Array current, next;
-        do Output.printString("found memory");
-        do Output.println();
+        var Array previous, current, blockSize;
 
         let current = freeList;
-        if (current[1] > size + 1) {
-            do Output.printString("found memory");
-            do Output.println();
-            let freeList = freeList + size + 2;
-            return current;
-        }
+        let blockSize = current[0];
+        if (blockSize < (size + 2)) {
+            let previous = current;
+            let current = previous[0]; // we assume here there is more than one node in the freeList
 
-        let next = current;
-        let next = next[0];
+            while (true) {
+                let blockSize = current[0];
+                if (blockSize < (size + 2)) {
+                    let previous = current;
+                    let current = current[1];
+                }
+                else {
+                    let previous[1] = current[1];
 
-        while (true) {
-            if (next[1] > size + 1) {
-                let current[0] = next + size + 2;
+                    return current;
+                }
 
-                return next;
             }
-
-            do Output.printString("next");
-            do Output.println();
-            let current = next;
-            let next = next[0];
         }
 
-        do Output.printString("shouldn't reach here");
-        do Output.println();
-        return 2028; // [shay] I included this because compiler wouldn't compile otherwise
+
+        let freeList = freeList + size + 2;
+        let freeList[0] = current[0] - size;
+        let freeList[1] = current[1];
+
+        return current + 1;
     }
 
     /** De-allocates the given object (cast as an array) by making
@@ -99,6 +103,17 @@ class Memory {
         // Pseudocode:
         // 1. segment = o - 1
         // 2. Insert segment into the freeList
+        var Array current, segment;
+
+        let segment = o - 1;
+        let current = freeList;
+
+        while (~(current[1] = 0)) {
+            let current = current[1];
+        }
+
+        let current[0] = o;
+        let o[1] = 0;
 
         return;
     }    

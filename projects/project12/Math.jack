@@ -9,8 +9,29 @@
  * Note: Jack compilers implement multiplication and division using OS method calls.
  */
 class Math {
+        static int divideRemainder;
+	static Array bitArray;
+
         /** Initializes the library. */
         function void init() {
+
+            let bitArray = Array.new(16);
+            let bitArray[0] = 1;
+            let bitArray[1] = 2; // 2**1
+            let bitArray[2] = 4; // 2**2
+            let bitArray[3] = 8; // 2**3
+            let bitArray[4] = 16; // 2**4
+            let bitArray[5] = 32; // 2**5
+            let bitArray[6] = 64; // 2**6
+            let bitArray[7] = 128; // 2**7
+            let bitArray[8] = 256; // 2**8
+            let bitArray[9] = 512; // 2**9
+            let bitArray[10] = 1024; // 2**10
+            let bitArray[11] = 2048; // 2**11
+            let bitArray[12] = 4096; // 2**12
+            let bitArray[13] = 8192; // 2**13
+            let bitArray[14] = 16384; // 2**14
+            let bitArray[15] = 16384 + 16384; // 2**15
             return;
         }
 
@@ -45,9 +66,10 @@ class Math {
                 let sign = 1;
             } else {
                 let sign = -1;
-                let x = Math.abs(x);
-                let y = Math.abs(y);
             }
+
+            let x = Math.abs(x);
+            let y = Math.abs(y);
 
             let result = Math.multiplyHelper(x, y);
 
@@ -59,15 +81,6 @@ class Math {
         }
 
         function int multiplyHelper(int x, int y) {
-            // Pseudocode:
-            // 1. let sum = 0
-            // 2. let shiftedx = x
-            // 3. for i = 0 ... n-1 do
-            // 4.   if ((i-th bit of y) == 1)
-            // 5.      let sum = sum + shiftedx
-            // 6.   let shiftedx = 2*shiftedx
-            // 7. return sum
-
             var int sum, shiftedx;
 
             let sum = 0;
@@ -109,10 +122,11 @@ class Math {
                 let sign = 1;
             } else {
                 let sign = -1;
-                let x = Math.abs(x);
-                let y = Math.abs(y);
             }
+            let x = Math.abs(x);
+            let y = Math.abs(y);
 
+            let divideRemainder = x;
             let result = Math.divideHelper(x, y);
 
             if (sign = 1) {
@@ -123,17 +137,20 @@ class Math {
         }
 
         function int divideHelper(int x, int y) {
-            var int q;
+            var int q, tmp;
 
             if ((y > x) | (y < 0)) {
                 return 0;
             }
 
-            let q = Math.divideHelper(x, Math.multiply(y, 2));
-            if ((x - Math.multiply(2, Math.multiply(q, y))) < y) {
-                return Math.multiply(2, q);
+            let tmp = ^y;           // equivalent to Math.multiply(y, 2)
+            let q = Math.divideHelper(x, tmp);
+            if (divideRemainder < y) {
+                return (^q);
             }
-           return Math.multiply(2, q) + 1;
+            
+           let divideRemainder = divideRemainder - y;
+           return (^q) + 1;
         }
 
         /** Returns the integer part of the square root of x. */
@@ -144,31 +161,26 @@ class Math {
             // 2. for j = (n/2 - 1) ... 0 do
             // 3.   if ((y + 2**j)**2 <= x) then let y = y + 2**j
             // 4. return y
+            
+            var int y, j, temp, tempSquare;
 
-            var int y, j, k, l, tmp;
-
+            if (x < 0) {
+                do Sys.error(4);
+                return 0;
+            }
+    
             let y = 0;
-            // let j = Math.divide(x, 2); // can be replaced with shift
-            let j = 16; // number of bits in x
-
+            let j = 7;
+    
             while (~(j < 0)) {
-                let k = j;
-                let l = 1;
-                while (k > 0) {
-                    let l = ^l;
-                    let k = k - 1;
+                let temp = y + bitArray[j];
+                let tempSquare = temp * temp;
+    
+                if (~(tempSquare > x) & (tempSquare > 0)) {
+                    let y = temp;
                 }
-
-                let tmp = l + y;
-                let tmp = Math.multiply(tmp, tmp);
-
-                if ((~(tmp > x)) & (tmp > 0)) {
-                    let y = y + l;
-                }
-
                 let j = j - 1;
             }
-
             return y;
         }
 
