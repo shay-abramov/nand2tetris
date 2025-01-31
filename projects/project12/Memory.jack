@@ -15,10 +15,7 @@ class Memory {
     static int heapBase; // I wanted to declare a const/symbolic naming for this address
     static int heapSize;
 
-    static Array freeList;
-
     static Array ram;
-    static Array heap;
     static Array freeList;
 
     /** Initializes the class. */
@@ -32,8 +29,8 @@ class Memory {
         let heapBase = 2048;
         let heapSize = 14335;
 
-        let freeList = heapBase;
-        let freeList[0] = heapSize;
+        let freeList = 2048;
+        let freeList[0] = 14335;
         let freeList[1] = null;
 
         return;
@@ -66,33 +63,48 @@ class Memory {
         // The figure MemoryTest/MemoryFreeListExample.png illustrates how
         // the freeList should look like.
 
-        var Array previous, current, blockSize;
+        var Array previous, current;
 
         let current = freeList;
-        let blockSize = current[0];
-        if (blockSize < (size + 2)) {
+        if ((current[0]) < (size + 1)) {
             let previous = current;
-            let current = previous[0]; // we assume here there is more than one node in the freeList
+            let current = previous[1]; // we assume here there is more than one node in the freeList
 
             while (true) {
-                let blockSize = current[0];
-                if (blockSize < (size + 2)) {
+                if ((current[0]) < (size + 1)) {
                     let previous = current;
                     let current = current[1];
                 }
                 else {
-                    let previous[1] = current[1];
+                    if (current[0] = (size + 1)) {
+                        let previous[1] = current[1];
 
-                    return current;
+                        return current + 1;
+                    }
+                    else {
+                        if (current[0] > (size + 2)) {
+                            let current[0] = ((current[0]) - size) - 1;
+                            let current = current + (current[0]);
+                            let current[0] = size + 1;
+
+                            return current + 1;
+                        }
+                        let previous = current;
+                        let current = current[1];
+                    }
                 }
 
             }
         }
 
 
-        let freeList = freeList + size + 2;
-        let freeList[0] = current[0] - size;
-        let freeList[1] = current[1];
+        // let freeList = freeList + size + 1;
+        // let freeList[0] = current[0] - size;
+        // let freeList[1] = current[1];
+
+        let freeList[0] = ((freeList[0]) - size) - 1;
+        let current = freeList + (freeList[0]);
+        let current[0] = size + 1;
 
         return current + 1;
     }
@@ -112,8 +124,10 @@ class Memory {
             let current = current[1];
         }
 
-        let current[0] = o;
-        let o[1] = 0;
+        // let current[0] = o;
+        // let o[1] = 0;
+        let current[1] = segment;
+        let segment[1] = 0;
 
         return;
     }    
