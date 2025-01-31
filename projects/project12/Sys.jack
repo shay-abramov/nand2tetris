@@ -16,9 +16,9 @@ class Sys {
         // 2. do Main.main()
         // 3. do Sys.halt()
 
+        do Memory.init();
         do Keyboard.init();
         do Math.init();
-        do Memory.init();
         do Screen.init();
         do Output.init();
 
@@ -40,7 +40,7 @@ class Sys {
         var int i;
 
         while (duration > 0) {
-            let i = 128;
+            let i = 100;
             while (i > 0) {
                 let i = i - 1;
             }

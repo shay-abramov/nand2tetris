@@ -19,16 +19,11 @@ class String {
     /** constructs a new empty string with a maximum length of maxLength
      *  and initial length of 0. */
     constructor String new(int maxLength) {
-        if (maxLength = 0) {
-            // let string_ = null;
-            let capacity_ = 0;
-            let length_ = 0;
-        }
-        else {
+        if (~(maxLength = 0)) {
             let string_ = Array.new(maxLength);
+        }
             let capacity_ = maxLength;
             let length_ = 0;
-        }
 
         return this;
     }
@@ -69,8 +64,10 @@ class String {
 
     /** Erases the last character from this string. */
     method void eraseLastChar() {
-        let length_ = length_ - 1;
-        let string_[length_] = 0;    // todo - maybe set as null? or not set at all (ignore)?
+        if (length_ > 0) {
+            let length_ = length_ - 1;
+        }
+        // let string_[length_] = 0;    // todo - maybe set as null? or not set at all (ignore)?
 
         return;
     }

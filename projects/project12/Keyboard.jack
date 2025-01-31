@@ -8,8 +8,12 @@
  * A library for handling user input from the keyboard.
  */
 class Keyboard {
+    static Array keyboard;
+
         /** Initializes the keyboard. */
         function void init() {
+            let keyboard = 24576;
+
             return;
         } 
 
@@ -34,7 +38,7 @@ class Keyboard {
          * F1 - F12 = 141 - 152
          */
         function char keyPressed() {
-            return Memory.peek(24576);
+            return keyboard[0];
         }
 
         /**								
@@ -54,6 +58,8 @@ class Keyboard {
             // 7. return c
             var char c;
 
+            do Output.printChar(0); // display the cursor
+
             while (Keyboard.keyPressed() = 0) {
                 // do nothing
             }
@@ -64,6 +70,9 @@ class Keyboard {
                 // do nothing
             }
 
+            if (~(c = 129)) {
+                do Output.printChar(129);
+            }
             do Output.printChar(c);
 
             return c;
@@ -109,8 +118,9 @@ class Keyboard {
                 }
                 else {
 		            if (c = 129) {
-                        if (str.length() > 0) {
+                        if ((str.length()) > 0) {
                             do str.eraseLastChar();
+                            do Output.printChar(129);
 
                             // we move the cursor back. this was done in readChar()
                             // if not - should add 'do Output.backspace()' here
